@@ -30,7 +30,6 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@Transactional
 public class PerformanceService {
     private final PerformanceRepository performanceRepository;
     private final VenueRepository venueRepository;
@@ -47,6 +46,7 @@ public class PerformanceService {
         performanceEntity.write(performance.getRemainCapacity());
     }
 
+    @Transactional
     public Performance registerPerformance(Long venueId, Long businessUserId, PerformanceRequest performanceRequest) {
         if (Objects.isNull(performanceRequest)) {
             throw new ReservationException("empty performance request");
