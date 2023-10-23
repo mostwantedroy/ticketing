@@ -3,7 +3,7 @@
 
 ## 1. ERD
 
-![[erd.png]]
+![image](./erd.png)
 
 - 사용자는 특정 공연을 여러 좌석을 선택해서 여러 번 예매를 할 수 있습니다.
     - 하나의 예매는 여러 좌석을 포함할 수 있다. 하나의 좌석은 여러 예매(공연A, 공연B)에 포함될 수 있습니다. Reservation과 VenueSeat은 N 대 N 관계이기 때문에 ReservationSeat이라는 Entity를 뽑아냅니다.
