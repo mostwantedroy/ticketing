@@ -1,6 +1,5 @@
 package com.example.ticketing.service.businessuser;
 
-
 import com.example.ticketing.common.ErrorCode;
 import com.example.ticketing.domain.BusinessUser;
 import com.example.ticketing.entity.BusinessUserEntity;
@@ -40,7 +39,7 @@ public class BusinessUserService {
         return businessUserRepository.save(BusinessUserEntity.fromDomain(businessUser)).toDomain();
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public String loginBusinessUser(BusinessUserLoginRequest businessUserLoginRequest) {
         if (Objects.isNull(businessUserLoginRequest)) {
             throw new ReservationException("empty business user login request");

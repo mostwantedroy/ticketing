@@ -20,11 +20,11 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
 public class VenueService {
     private final BusinessUserRepository businessUserRepository;
     private final VenueRepository venueRepository;
 
+    @Transactional
     public Venue registerVenue(Long businessUserId, VenueRequest venueRequest) {
         if (Objects.isNull(venueRequest)) {
             throw new ReservationException("empty venue request");

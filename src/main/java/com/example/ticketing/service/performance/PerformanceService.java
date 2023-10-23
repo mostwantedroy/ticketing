@@ -109,11 +109,10 @@ public class PerformanceService {
             return Page.empty();
         }
 
-        return new PageImpl<>(
-                pagedPerformanceEntities.getContent()
-                        .stream()
-                        .map(PerformanceEntity::toDomain)
-                        .collect(Collectors.toList()),
+        return new PageImpl<>(pagedPerformanceEntities.getContent()
+                .stream()
+                .map(PerformanceEntity::toDomain)
+                .collect(Collectors.toList()),
                 pageRequest,
                 pagedPerformanceEntities.getTotalElements()
         );

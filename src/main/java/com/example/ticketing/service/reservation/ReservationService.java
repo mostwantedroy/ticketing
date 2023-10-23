@@ -44,7 +44,6 @@ import static com.example.ticketing.common.ErrorCode.RESERVATION_SEAT_OCCUPIED;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@Transactional
 public class ReservationService {
     private final ReservationRepository reservationRepository;
     private final PerformanceRepository performanceRepository;
@@ -80,6 +79,7 @@ public class ReservationService {
         }
     }
 
+    @Transactional
     public Reservation startReserveTransaction(Long userId, Long performanceId, ReservationRequest reservationRequest) {
         if (Objects.isNull(reservationRequest)) {
             throw new ReservationException("empty reservation request");
