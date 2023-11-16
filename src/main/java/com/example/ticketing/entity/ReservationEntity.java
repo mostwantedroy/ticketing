@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 @EqualsAndHashCode(of = "reservationId")
 @EntityListeners(AuditingEntityListener.class)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class ReservationEntity {
+public class ReservationEntity extends BaseTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long reservationId;
@@ -41,12 +41,6 @@ public class ReservationEntity {
 
     @Column
     private BigDecimal vipPrice;
-
-    @CreatedDate
-    private LocalDateTime createdAt;
-
-    @LastModifiedDate
-    private LocalDateTime lastModifiedAt;
 
     @OneToMany(mappedBy = "reservation", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<ReservationSeatEntity> reservationSeats;
@@ -74,8 +68,6 @@ public class ReservationEntity {
                 .totalPrice(totalPrice)
                 .normalPrice(normalPrice)
                 .vipPrice(vipPrice)
-                .createdAt(createdAt)
-                .lastModifiedAt(lastModifiedAt)
                 .reservationSeats(reservationSeats.stream()
                         .map(ReservationSeatEntity::toDomain)
                         .collect(Collectors.toList()))

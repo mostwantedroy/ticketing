@@ -22,9 +22,13 @@ public class QReservationEntity extends EntityPathBase<ReservationEntity> {
 
     public static final QReservationEntity reservationEntity = new QReservationEntity("reservationEntity");
 
-    public final DateTimePath<java.time.LocalDateTime> createdAt = createDateTime("createdAt", java.time.LocalDateTime.class);
+    public final QBaseTimeEntity _super = new QBaseTimeEntity(this);
 
-    public final DateTimePath<java.time.LocalDateTime> lastModifiedAt = createDateTime("lastModifiedAt", java.time.LocalDateTime.class);
+    //inherited
+    public final DateTimePath<java.time.LocalDateTime> createdAt = _super.createdAt;
+
+    //inherited
+    public final DateTimePath<java.time.LocalDateTime> lastModifiedAt = _super.lastModifiedAt;
 
     public final NumberPath<java.math.BigDecimal> normalPrice = createNumber("normalPrice", java.math.BigDecimal.class);
 

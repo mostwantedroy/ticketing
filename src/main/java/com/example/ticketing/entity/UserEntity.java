@@ -16,7 +16,7 @@ import java.util.Objects;
 @EqualsAndHashCode(of = "userId")
 @EntityListeners(AuditingEntityListener.class)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class UserEntity {
+public class UserEntity extends BaseTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long userId;
@@ -26,12 +26,6 @@ public class UserEntity {
 
     @Column
     private String password;
-
-    @CreatedDate
-    private LocalDateTime createdAt;
-
-    @LastModifiedDate
-    private LocalDateTime lastModifiedAt;
 
     @Builder
     public UserEntity(String email, String password) {
@@ -44,8 +38,6 @@ public class UserEntity {
                 .userId(userId)
                 .email(email)
                 .password(password)
-                .createdAt(createdAt)
-                .lastModifiedAt(lastModifiedAt)
                 .build();
     }
 
