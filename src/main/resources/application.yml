@@ -2,7 +2,58 @@ spring:
   application:
     name: ticketing
   profiles:
-    active: dev
+    default: local
+
+  jpa:
+    hibernate:
+      ddl-auto: none
+
+jwt:
+  secret-key: secret-key
+  issuer: ticketing-server
+  valid-duration-second: 86400
+
+redis:
+  address: redis://localhost:6379
+
+---
+
+spring:
+  config:
+    activate:
+      on-profile: local
+
+  datasource:
+    url: jdbc:h2:mem:~/ticketing
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+
+  jpa:
+    hibernate:
+      ddl-auto: create
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+  h2:
+    console:
+      enabled: true
+
+---
+
+spring:
+  config:
+    activate:
+      on-profile: prod
+
+  datasource:
+    url: ${DB_URL}
+    driver-class-name: com.mysql.jdbc.Driver
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD
+
   jpa:
     hibernate:
       ddl-auto: validate
@@ -14,7 +65,23 @@ spring:
         format_sql: true
         dialect: org.hibernate.dialect.MySQL8Dialect
 
-jwt:
-  secret-key: secret-key
-  issuer: ticketing-server
-  valid-duration-second: 86400
+---
+
+spring:
+  config:
+    activate:
+      on-profile: test
+
+  datasource:
+    url: jdbc:h2:mem:~/ticketing
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+
+  jpa:
+    hibernate:
+      ddl-auto: create
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
