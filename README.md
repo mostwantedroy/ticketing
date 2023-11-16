@@ -1,6 +1,9 @@
 공연 예매 서비스 프로젝트입니다. 
 분산 락을 이용해 동시성 문제를 해결해보기 위한 토이 프로젝트입니다. 
 
+## 기술 스택
+Spring 2.7.13, Hibernate 5.6.15, QueryDSL 5.0.0
+
 ## 1. ERD
 
 ![image](./erd.png)
@@ -10,7 +13,7 @@
 - 초기 modeling 과정에서 reservationSeat에 seatType이 존재하지 않았고, reservation에 performance의 normalPrice, vipPrice column이 존재하지 않았습니다. 이 경우 관리자가 performance의 가격을 변경하거나 VenueSeat의 type을 수정할 경우, 이미 추가된 reservation에서 가격 정보를 계산할 경우 데이터 불일치 발생할 수 있을 것 같습니다. 데이터가 중복될 수 있지만 결국 reservation은 그 당시의 venueSeatType의 정보와 performance 가격 정보를 capture한 정보라고 봐야한다고 생각하여, 이들을 가지고 있어야 하고 그 공연의 정보나 좌석 정보를 수정하더라도 side effect이 사라지게 되므로 이들을 추가하도록 수정했습니다.
 - performance의 capacity는 총 cap과 남은 cap으로 나눠서 관리합니다. 
 
-## 2. 동시성_문제
+## 2. 동시성_문제 및 해결 과정
 
 1. 공연 예매 비즈니스 상, 많은 예매 요청이 한번에 요청될 가능성이 높으므로, DB 단의 비관적 락이나 낙관적 락은 성능상으로 이슈가 생길 것 같다고 판단했습니다. 그러므로 Application에서 `Redis`를 활용해 `분산 락`을 걸어서 해결하는 방향으로 좋겠다고 판단했습니다. 
     
@@ -22,7 +25,7 @@
 
 - Lock 획득
 - Transaction 시작
-- reservation logic 처리
+- Reservation Logic 처리
 - Transaction 커밋
 - Lock 반납
 
