@@ -17,19 +17,20 @@ import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
+@Transactional(readOnly = true)
 public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
+    @Transactional
     public User registerUser(UserRequest userRequest) {
         if (Objects.isNull(userRequest)) {
             throw new ReservationException("empty user request");
         }
 
-        final String encryptedPassword = passwordEncoder.encode(userRequest.getPassword());
+        String encryptedPassword = passwordEncoder.encode(userRequest.getPassword());
 
-        final User user = User.create()
+        User user = User.create()
                 .email(userRequest.getEmail())
                 .password(encryptedPassword)
                 .build();
@@ -37,12 +38,13 @@ public class UserService {
         return userRepository.save(UserEntity.fromDomain(user)).toDomain();
     }
 
+    @Transactional
     public String loginUser(UserLoginRequest userLoginRequest) {
         if (Objects.isNull(userLoginRequest)) {
             throw new ReservationException("empty user login request");
         }
 
-        final User user = userRepository.findByEmail(userLoginRequest.getEmail())
+        User user = userRepository.findByEmail(userLoginRequest.getEmail())
                 .map(UserEntity::toDomain)
                 .orElseThrow(() -> new ReservationException(ErrorCode.UNAUTHORIZED));
 
@@ -54,7 +56,6 @@ public class UserService {
     }
 
 
-    @Transactional(readOnly = true)
     public User getUser(Long userId) {
         return userRepository.findById(userId)
                 .map(UserEntity::toDomain)

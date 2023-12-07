@@ -44,6 +44,7 @@ import static com.example.ticketing.common.ErrorCode.RESERVATION_SEAT_OCCUPIED;
 @Slf4j
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class ReservationService {
     private final ReservationRepository reservationRepository;
     private final PerformanceRepository performanceRepository;
@@ -51,20 +52,20 @@ public class ReservationService {
     private final PaymentGatewayApiClient paymentGatewayApiClient;
     private final ApplicationEventPublisher eventPublisher;
 
-    private final RedissonClient redisson;
+    private final RedissonClient redissonClient;
     private final ApplicationContext applicationContext;
 
     private static final Integer MAX_RESERVABLE_SEATS = 5;
 
     public Reservation reserve(Long userId, Long performanceId, ReservationRequest reservationRequest) {
-        final String reservationLockKey = "PERFORMANCE:" + performanceId;
-        final RLock lock = redisson.getLock(reservationLockKey);
+        String reservationLockKey = "PERFORMANCE:" + performanceId;
+        RLock lock = redissonClient.getLock(reservationLockKey);
 
         try {
             if (lock.tryLock(5000, 4000, TimeUnit.MILLISECONDS)) {
-                final ReservationService transactionAppliedReservationService = applicationContext.getBean(ReservationService.class);
+                ReservationService transactionAppliedReservationService = applicationContext.getBean(ReservationService.class);
 
-                final Reservation reservation = transactionAppliedReservationService.startReserveTransaction(userId, performanceId, reservationRequest);
+                Reservation reservation = transactionAppliedReservationService.startReserveTransaction(userId, performanceId, reservationRequest);
 
                 return reservation;
             } else {
@@ -85,14 +86,14 @@ public class ReservationService {
             throw new ReservationException("empty reservation request");
         }
 
-        final Performance performance = performanceRepository.findById(performanceId)
+        Performance performance = performanceRepository.findById(performanceId)
                 .map(PerformanceEntity::toDomain)
                 .orElseThrow(() -> new ReservationException("not found performance id:" + performanceId));
 
         validateEligibleForReservation(performance, reservationRequest);
         performanceCapacityService.deleteCapacity(performanceId, reservationRequest.getRequestedReservationSeatCount());
 
-        final Reservation reservation = createReservation(userId, performance, reservationRequest);
+        Reservation reservation = createReservation(userId, performance, reservationRequest);
 
         paymentGatewayApiClient.completePayment(PaymentCompleteRequest.builder()
                 .userId(userId)
@@ -119,12 +120,12 @@ public class ReservationService {
     }
 
     private Reservation createReservation(Long userId, Performance performance, ReservationRequest reservationRequest) {
-        final List<Long> seatIds = reservationRequest.getReservationSeatIds();
-        final Venue venue = performance.getVenue();
-        final Map<Long, VenueSeatType> venueSeatTypeBySeatId = venue.getVenueSeatTypeBySeatId();
-        final BigDecimal totalPrice = calculateTotalPrice(performance, seatIds);
+        List<Long> seatIds = reservationRequest.getReservationSeatIds();
+        Venue venue = performance.getVenue();
+        Map<Long, VenueSeatType> venueSeatTypeBySeatId = venue.getVenueSeatTypeBySeatId();
+        BigDecimal totalPrice = calculateTotalPrice(performance, seatIds);
 
-        final List<ReservationSeat> reservationSeats = seatIds.stream()
+        List<ReservationSeat> reservationSeats = seatIds.stream()
                 .map(seatId -> ReservationSeat.create()
                         .venueSeatId(seatId)
                         .seatType(venueSeatTypeBySeatId.get(seatId))
@@ -142,7 +143,6 @@ public class ReservationService {
                 .build();
     }
 
-    @Transactional(readOnly = true)
     public List<ReservationSeat> getAllReservationSeat(Long performanceId) {
         return reservationRepository.findAllReservationSeatsByPerformanceId(performanceId)
                 .stream()
@@ -150,7 +150,6 @@ public class ReservationService {
                 .collect(Collectors.toList());
     }
 
-    @Transactional(readOnly = true)
     public List<ReservationSeat> getReservationSeatBy(List<Long> venueSeatIds) {
         return reservationRepository.findByVenueSeatIds(venueSeatIds)
                 .stream()
@@ -158,7 +157,6 @@ public class ReservationService {
                 .collect(Collectors.toList());
     }
 
-    @Transactional(readOnly = true)
     public Reservation getReservation(Long reservationId) {
         return reservationRepository.findByReservationId(reservationId)
                 .map(ReservationEntity::toDomain)
@@ -170,32 +168,32 @@ public class ReservationService {
             return BigDecimal.ZERO;
         }
 
-        final Venue venue = performance.getVenue();
-        final Map<Long, VenueSeatType> venueSeatTypeMap = venue.getVenueSeats()
+        Venue venue = performance.getVenue();
+        Map<Long, VenueSeatType> venueSeatTypeMap = venue.getVenueSeats()
                 .stream()
                 .collect(Collectors.toMap(VenueSeat::getSeatId, VenueSeat::getSeatType, (x1, x2) -> x1));
 
-        final long totalNormalSeatCount = seatIds.stream()
+        long totalNormalSeatCount = seatIds.stream()
                 .map(venueSeatTypeMap::get)
                 .filter(Objects::nonNull)
                 .filter(VenueSeatType.NORMAL::equals)
                 .count();
 
-        final long totalVipSeatCount = seatIds.stream()
+        long totalVipSeatCount = seatIds.stream()
                 .map(venueSeatTypeMap::get)
                 .filter(Objects::nonNull)
                 .filter(VenueSeatType.VIP::equals)
                 .count();
 
-        final BigDecimal normalTotalPrice = performance.getNormalPrice().multiply(BigDecimal.valueOf(totalNormalSeatCount));
-        final BigDecimal vipTotalPrice = performance.getVipPrice().multiply(BigDecimal.valueOf(totalVipSeatCount));
+        BigDecimal normalTotalPrice = performance.getNormalPrice().multiply(BigDecimal.valueOf(totalNormalSeatCount));
+        BigDecimal vipTotalPrice = performance.getVipPrice().multiply(BigDecimal.valueOf(totalVipSeatCount));
 
         return normalTotalPrice.add(vipTotalPrice);
     }
 
     private void validateEligibleForReservation(Performance performance, ReservationRequest reservationRequest) {
-        final List<Long> requestedSeatIds = reservationRequest.getReservationSeatIds();
-        final int requestedReserveSeatCount = requestedSeatIds.size();
+        List<Long> requestedSeatIds = reservationRequest.getReservationSeatIds();
+        int requestedReserveSeatCount = requestedSeatIds.size();
 
         if (MAX_RESERVABLE_SEATS < requestedReserveSeatCount) {
             throw new ReservationException(RESERVATION_SEAT_EXCEED_LIMIT);

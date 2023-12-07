@@ -30,6 +30,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class PerformanceService {
     private final PerformanceRepository performanceRepository;
     private final VenueRepository venueRepository;
@@ -83,21 +84,18 @@ public class PerformanceService {
                 .build();
     }
 
-    @Transactional(readOnly = true)
     public Page<Performance> findReservablePerformancesOn(PageRequest pageRequest) {
         final Page<PerformanceEntity> pagedPerformances = performanceRepository.findReservablePerformancesOn(LocalDateTime.now(), pageRequest);
 
         return getPagedPerformance(pagedPerformances, pageRequest);
     }
 
-    @Transactional(readOnly = true)
     public Page<Performance> findBestPerformances(PageRequest pageRequest) {
         final Page<PerformanceEntity> pagedPerformances = performanceRepository.findBestPerformances(pageRequest);
 
         return getPagedPerformance(pagedPerformances, pageRequest);
     }
 
-    @Transactional(readOnly = true)
     public Page<Performance> findCheapestPerformances(PageRequest pageRequest){
         final Page<PerformanceEntity> pagedPerformances = performanceRepository.findCheapestPerformances(pageRequest);
 

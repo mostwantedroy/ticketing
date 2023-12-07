@@ -17,6 +17,7 @@ import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class BusinessUserService {
     private final BusinessUserRepository businessUserRepository;
     private final PasswordEncoder passwordEncoder;
@@ -27,9 +28,9 @@ public class BusinessUserService {
             throw new ReservationException("empty business user request");
         }
 
-        final String encryptedPassword = passwordEncoder.encode(businessUserRequest.getPassword());
+        String encryptedPassword = passwordEncoder.encode(businessUserRequest.getPassword());
 
-        final BusinessUser businessUser = BusinessUser.create()
+        BusinessUser businessUser = BusinessUser.create()
                 .email(businessUserRequest.getEmail())
                 .password(encryptedPassword)
                 .businessUserType(businessUserRequest.getBusinessUserType())
@@ -39,13 +40,12 @@ public class BusinessUserService {
         return businessUserRepository.save(BusinessUserEntity.fromDomain(businessUser)).toDomain();
     }
 
-    @Transactional(readOnly = true)
     public String loginBusinessUser(BusinessUserLoginRequest businessUserLoginRequest) {
         if (Objects.isNull(businessUserLoginRequest)) {
             throw new ReservationException("empty business user login request");
         }
 
-        final BusinessUser businessUser = businessUserRepository.findByEmail(businessUserLoginRequest.getEmail())
+        BusinessUser businessUser = businessUserRepository.findByEmail(businessUserLoginRequest.getEmail())
                 .map(BusinessUserEntity::toDomain)
                 .orElseThrow(() -> new ReservationException(ErrorCode.UNAUTHORIZED));
 
@@ -56,7 +56,6 @@ public class BusinessUserService {
         return JwtUtils.createToken(businessUser.getBusinessUserId());
     }
 
-    @Transactional(readOnly = true)
     public BusinessUser getBusinessUser(Long businessUserId) {
         return businessUserRepository.findById(businessUserId)
                 .map(BusinessUserEntity::toDomain)

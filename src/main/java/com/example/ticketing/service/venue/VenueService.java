@@ -30,7 +30,7 @@ public class VenueService {
             throw new ReservationException("empty venue request");
         }
 
-        final BusinessUser businessUser = businessUserRepository.findById(businessUserId)
+        BusinessUser businessUser = businessUserRepository.findById(businessUserId)
                 .map(BusinessUserEntity::toDomain)
                 .orElseThrow(() -> new ReservationException(ErrorCode.NOT_FOUND_ENTITY));
 
@@ -38,7 +38,7 @@ public class VenueService {
             throw new ReservationException(ErrorCode.UNAUTHORIZED);
         }
 
-        final Venue venue = createVenue(businessUserId, venueRequest);
+        Venue venue = createVenue(businessUserId, venueRequest);
 
         return venueRepository.save(VenueEntity.fromDomain(venue)).toDomain();
     }
