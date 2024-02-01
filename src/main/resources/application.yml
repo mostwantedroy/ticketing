@@ -52,7 +52,7 @@ spring:
     url: ${DB_URL}
     driver-class-name: com.mysql.jdbc.Driver
     username: ${DB_USERNAME}
-    password: ${DB_PASSWORD
+    password: ${DB_PASSWORD}
 
   jpa:
     hibernate:
