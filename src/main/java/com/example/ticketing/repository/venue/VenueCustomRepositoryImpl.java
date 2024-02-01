@@ -16,7 +16,7 @@ public class VenueCustomRepositoryImpl implements VenueCustomRepository {
 
     @Override
     public Optional<VenueEntity> findByVenueId(Long venueId) {
-        final VenueEntity venue = queryFactory.selectFrom(venueEntity)
+        VenueEntity venue = queryFactory.selectFrom(venueEntity)
                 .where(venueEntity.venueId.eq(venueId))
                 .leftJoin(venueEntity.venueSeats)
                 .fetchJoin()

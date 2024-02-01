@@ -40,7 +40,7 @@ public class ReservationRepositoryImpl implements ReservationCustomRepository {
 
     @Override
     public Optional<ReservationEntity> findByReservationId(Long reservationId) {
-        final ReservationEntity reservation = queryFactory.selectFrom(reservationEntity)
+        ReservationEntity reservation = queryFactory.selectFrom(reservationEntity)
                 .where(reservationEntity.reservationId.eq(reservationId))
                 .leftJoin(reservationEntity.reservationSeats)
                 .fetchJoin()

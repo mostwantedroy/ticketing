@@ -27,14 +27,14 @@ public class PerformanceCustomRepositoryImpl implements PerformanceCustomReposit
 
     @Override
     public Page<PerformanceEntity> findReservablePerformancesOn(LocalDateTime localDateTime, PageRequest pageRequest) {
-        final List<PerformanceEntity> performances = queryFactory.selectFrom(performanceEntity)
+        List<PerformanceEntity> performances = queryFactory.selectFrom(performanceEntity)
                 .where(performanceEntity.startAt.after(localDateTime))
                 .orderBy(performanceEntity.createdAt.desc())
                 .offset(pageRequest.getOffset())
                 .limit(pageRequest.getPageSize())
                 .fetch();
 
-        final Long totalElements = Optional.ofNullable(queryFactory.select(performanceEntity.count())
+        Long totalElements = Optional.ofNullable(queryFactory.select(performanceEntity.count())
                         .from(performanceEntity)
                         .fetchOne())
                 .orElse(0L);
@@ -44,7 +44,7 @@ public class PerformanceCustomRepositoryImpl implements PerformanceCustomReposit
 
     @Override
     public Page<PerformanceEntity> findBestPerformances(PageRequest pageRequest) {
-        final List<Long> bestReservedPerformanceIds = queryFactory.select(reservationEntity.performanceId)
+        List<Long> bestReservedPerformanceIds = queryFactory.select(reservationEntity.performanceId)
                 .from(reservationEntity)
                 .groupBy(reservationEntity.performanceId)
                 .orderBy(reservationEntity.performanceId.count().desc())
@@ -52,18 +52,18 @@ public class PerformanceCustomRepositoryImpl implements PerformanceCustomReposit
                 .limit(pageRequest.getPageSize())
                 .fetch();
 
-        final List<PerformanceEntity> notOrderedBestReservedPerformances = queryFactory.selectFrom(performanceEntity)
+        List<PerformanceEntity> notOrderedBestReservedPerformances = queryFactory.selectFrom(performanceEntity)
                 .where(performanceEntity.performanceId.in(bestReservedPerformanceIds))
                 .fetch();
 
-        final Map<Long, PerformanceEntity> bestReservedPerformanceMap = notOrderedBestReservedPerformances.stream()
+        Map<Long, PerformanceEntity> bestReservedPerformanceMap = notOrderedBestReservedPerformances.stream()
                 .collect(Collectors.toMap(PerformanceEntity::getPerformanceId, Function.identity()));
 
-        final List<PerformanceEntity> bestReservedPerformances = bestReservedPerformanceIds.stream()
+        List<PerformanceEntity> bestReservedPerformances = bestReservedPerformanceIds.stream()
                 .map(bestReservedPerformanceMap::get)
                 .collect(Collectors.toList());
 
-        final Long totalElements = Optional.ofNullable(queryFactory.select(performanceEntity.count())
+        Long totalElements = Optional.ofNullable(queryFactory.select(performanceEntity.count())
                         .from(performanceEntity)
                         .fetchOne())
                 .orElse(0L);
@@ -78,13 +78,13 @@ public class PerformanceCustomRepositoryImpl implements PerformanceCustomReposit
             return Page.empty();
         }
 
-        final List<PerformanceEntity> performances = queryFactory.selectFrom(performanceEntity)
+        List<PerformanceEntity> performances = queryFactory.selectFrom(performanceEntity)
                 .orderBy(performanceEntity.normalPrice.asc())
                 .offset(pageRequest.getOffset())
                 .limit(pageRequest.getPageSize())
                 .fetch();
 
-        final Long totalElements = Optional.ofNullable(queryFactory.select(performanceEntity.count())
+        Long totalElements = Optional.ofNullable(queryFactory.select(performanceEntity.count())
                         .from(performanceEntity)
                         .fetchOne())
                 .orElse(0L);
